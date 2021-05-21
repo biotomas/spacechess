@@ -15,6 +15,7 @@
 
 <script src="input.js"></script>
 <script src="bullets.js"></script>
+<script src="hitpoints.js"></script>
 
 <script type="module">
     import * as THREE from './libs/three.module.js';
@@ -38,6 +39,13 @@
             });
         }
 
+        function loadSprite(path) {
+            const map = new THREE.TextureLoader().load(path);
+            const material = new THREE.SpriteMaterial({ map: map });
+            const sprite = new THREE.Sprite(material);
+            return sprite;
+        }
+
         const canvas = document.querySelector('#c');
         initializeInput(canvas);
         const renderer = new THREE.WebGLRenderer({ canvas });
@@ -56,10 +64,9 @@
         document.body.appendChild(stats.dom);
 
         const scene = new THREE.Scene();
-        const map = new THREE.TextureLoader().load('./sprites/bullet.png');
-        const material = new THREE.SpriteMaterial({ map: map });
-        const sprite = new THREE.Sprite(material);
-        setBulletSprite(sprite, scene);
+        scene.background = new THREE.Color( 0x444444 );
+        setBulletSprite(loadSprite('./sprites/bullet.png'), scene);
+        setHPSprites(loadSprite('./sprites/HP_Bar_Version_01_Empty.png'),loadSprite('./sprites/HP_Bar_Pellet.png'), scene);
 
 
         {
@@ -151,27 +158,27 @@
             if (models["rook"]) {
                 var rook = models["rook"];
                 //models["rook"].rotation.y = time;
-                rook.rotation.x = Math.PI/2;
+                rook.rotation.x = Math.PI / 2;
 
                 if (rooks == 0) {
                     var rook2 = rook.clone();
                     rook2.position.x = 5;
                     rook2.position.y = 10;
-                    rook2.rotation.x = Math.PI/2;
+                    rook2.rotation.x = Math.PI / 2;
                     rook2.rotation.y = Math.PI;
                     scene.add(rook2);
 
                     var rook2 = rook.clone();
                     rook2.position.x = -5;
                     rook2.position.y = 10;
-                    rook2.rotation.x = Math.PI/2;
+                    rook2.rotation.x = Math.PI / 2;
                     rook2.rotation.y = Math.PI;
                     scene.add(rook2);
 
                     var rook2 = rook.clone();
                     rook2.position.x = 0;
                     rook2.position.y = 10;
-                    rook2.rotation.x = Math.PI/2;
+                    rook2.rotation.x = Math.PI / 2;
                     rook2.rotation.y = Math.PI;
                     scene.add(rook2);
 
@@ -187,6 +194,8 @@
             requestAnimationFrame(render);
         }
 
+        var hpValue = 0;
+
         function takeInput() {
             var player = models["rook"];
             if (player) {
@@ -198,10 +207,14 @@
                 }
                 if (keyIsDown(37)) {
                     player.position.x -= 0.05;
+                    hpValue -= 0.1;
+                    
                 }
                 if (keyIsDown(39)) {
+                    hpValue += 0.1;
                     player.position.x += 0.05;
                 }
+                setHPValue(hpValue);
                 if (keypressed(32)) {
                     addBullet(true, player.position.x, player.position.y, 0, 1, 10);
                     addBullet(true, player.position.x, player.position.y, -0.4, 1, 10);
