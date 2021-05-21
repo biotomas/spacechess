@@ -53,10 +53,12 @@
         const fov = 75;
         const aspect = 0.75;  // the canvas default
         const near = 0.1;
-        const far = 50;
+        const far = 150;
         const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         camera.position.z = 10;
         camera.position.y = 5;
+        camera.lookAt(0,10,0);
+        camera.position.y = -2;
         var model;
 
         var stats = new Stats();
@@ -161,6 +163,8 @@
                 rook.rotation.x = Math.PI / 2;
 
                 if (rooks == 0) {
+                    rook.rotation.z = 0;
+                    rook.position.y = -3;
                     var rook2 = rook.clone();
                     rook2.position.x = 5;
                     rook2.position.y = 10;
@@ -194,31 +198,37 @@
             requestAnimationFrame(render);
         }
 
-        var hpValue = 0;
+        var hpValue = 2;
 
         function takeInput() {
             var player = models["rook"];
             if (player) {
+                player.rotation.z = 0;
                 if (keyIsDown(40)) {
-                    player.position.y -= 0.05;
+                    // down
+                    player.position.y -= 0.09;
                 }
                 if (keyIsDown(38)) {
-                    player.position.y += 0.05;
+                    // up
+                    player.position.y += 0.09;
                 }
                 if (keyIsDown(37)) {
-                    player.position.x -= 0.05;
+                    //left
+                    player.position.x -= 0.09;
+                    player.rotation.z = 0.4;
                     hpValue -= 0.1;
-                    
                 }
                 if (keyIsDown(39)) {
+                    //right
                     hpValue += 0.1;
-                    player.position.x += 0.05;
+                    player.position.x += 0.09;
+                    player.rotation.z = -0.4;
                 }
                 setHPValue(hpValue);
-                if (keypressed(32)) {
-                    addBullet(true, player.position.x, player.position.y, 0, 1, 10);
-                    addBullet(true, player.position.x, player.position.y, -0.4, 1, 10);
-                    addBullet(true, player.position.x, player.position.y, 0.4, 1, 10);
+                if (keyIsDown(32)) {
+                    addBullet(true, player.position.x, player.position.y+1, 0, 1, 10);
+                    addBullet(true, player.position.x, player.position.y+1, -0.4, 1, 10);
+                    addBullet(true, player.position.x, player.position.y+1, 0.4, 1, 10);
                 }
             }
         }

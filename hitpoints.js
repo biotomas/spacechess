@@ -4,7 +4,7 @@ var hitpoints = 5;
 function setHPSprites(empty, pellet, scene) {
 
     scene.add(pellet);
-    pellet.position.y = 12;
+    pellet.position.y = -3.5;
     pellet.position.x = -2;
     pellet.position.z = -0.01;
     pellet.scale.y = 0.45;
@@ -12,7 +12,7 @@ function setHPSprites(empty, pellet, scene) {
     pelletSprite = pellet;
 
     scene.add(empty);
-    empty.position.y = 12;
+    empty.position.y = -3.5;
     empty.position.x = 0.5;
     empty.scale.x = 7;
 }

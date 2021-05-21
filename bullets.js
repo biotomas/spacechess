@@ -14,7 +14,9 @@ class Bullet {
 }
 
 function setBulletSprite(sprite, scene) {
-    for (let count = 0; count < 100; count++) {
+    sprite.scale.x = 0.6;
+    sprite.scale.y = 0.6;
+    for (let count = 0; count < 1000; count++) {
         var clonedSprite = sprite.clone();
         clonedSprite.position.y = 20;
         clonedSprite.material = sprite.material.clone();
@@ -63,7 +65,7 @@ function updateBullets(time) {
 }
 
 function removeBullet(bullet) {
-    if (bullet.x < -10 || bullet.x > 10 || bullet.y < -10 || bullet.y > 20) {
+    if (bullet.x < -100 || bullet.x > 100 || bullet.y < -10 || bullet.y > 20) {
         spritesPool.push(bullet.sprite);
         return true;
     } else {
