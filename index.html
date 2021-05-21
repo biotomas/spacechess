@@ -1,0 +1,150 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Three.js - Fundamentals 3 cubes</title>
+</head>
+
+<body>
+    <canvas id="c" width="1000" height="500"></canvas>
+</body>
+<script src="input.js"></script>
+<script type="module">
+    import * as THREE from './libs/three.module.js';
+    import { GLTFLoader } from './libs/GLTFLoader.js';
+    import Collisions from './libs/collisions/Collisions.js';
+
+    function main() {
+        const canvas = document.querySelector('#c');
+        initializeInput(canvas);
+        const renderer = new THREE.WebGLRenderer({ canvas });
+
+        const fov = 75;
+        const aspect = 2;  // the canvas default
+        const near = 0.1;
+        const far = 50;
+        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.position.z = 2;
+        var model;
+
+        const scene = new THREE.Scene();
+
+        {
+            const color = 0xFFFFFF;
+            const intensity = 1;
+            const light = new THREE.DirectionalLight(color, intensity);
+            light.position.set(-1, 2, 4);
+            scene.add(light);
+
+            const loader = new GLTFLoader();
+
+            loader.load('models/untitled.glb', function (gltf) {
+                model = gltf.scene;
+                scene.add(gltf.scene);
+
+            }, undefined, function (error) {
+
+                console.error(error);
+
+            });
+
+            // collision test
+            // Create the collision system
+            const system = new Collisions();
+
+            // Create a Result object for collecting information about the collisions
+            const result = system.createResult();
+
+            // Create the player (represented by a Circle)
+            const player = system.createCircle(100, 100, 10);
+
+            // Create some walls (represented by Polygons)
+            const wall1 = system.createPolygon(400, 500, [[-60, -20], [60, -20], [60, 20], [-60, 20]], 1.7);
+            const wall2 = system.createPolygon(200, 100, [[-60, -20], [60, -20], [60, 20], [-60, 20]], 2.2);
+            const wall3 = system.createPolygon(400, 50, [[-60, -20], [60, -20], [60, 20], [-60, 20]], 0.7);
+
+            // Update the collision system
+            system.update();
+
+            // Get any potential collisions (this quickly rules out walls that have no chance of colliding with the player)
+            const potentials = player.potentials();
+
+            // Loop through the potential wall collisions
+            for (const wall of potentials) {
+                // Test if the player collides with the wall
+                if (player.collides(wall, result)) {
+                    // Push the player out of the wall
+                    player.x -= result.overlap * result.overlap_x;
+                    player.y -= result.overlap * result.overlap_y;
+                }
+            }
+        }
+
+        const boxWidth = 1;
+        const boxHeight = 1;
+        const boxDepth = 1;
+        const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+        function makeInstance(geometry, color, x) {
+            const material = new THREE.MeshPhongMaterial({ color });
+
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            cube.position.x = x;
+
+            return cube;
+        }
+
+        const cubes = [
+            makeInstance(geometry, 0x44aa88, 0),
+            makeInstance(geometry, 0x8844aa, -2),
+            makeInstance(geometry, 0xaa8844, 2),
+        ];
+
+        function render(time) {
+            time *= 0.001;  // convert time to seconds
+
+            if (keyIsDown(40)) {
+                camera.position.z += 0.05;
+            }
+            if (keyIsDown(38)) {
+                camera.position.z -= 0.05;
+            }
+            if (keyIsDown(37)) {
+                camera.position.x += 0.05;
+            }
+            if (keyIsDown(39)) {
+                camera.position.x -= 0.05;
+            }
+
+            if (keyIsDown(65)) {
+                model.position.x += 0.05;
+            }
+            if (keyIsDown(68)) {
+                model.position.x -= 0.05;
+            }
+            cubes.forEach((cube, ndx) => {
+                const speed = 1 + ndx * .1;
+                const rot = time * speed;
+                cube.rotation.x = rot;
+                cube.rotation.y = rot;
+            });
+            if (model)
+                model.rotation.x = time;
+
+            renderer.render(scene, camera);
+
+            requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+
+    }
+
+    main();
+</script>
+
+</html>
