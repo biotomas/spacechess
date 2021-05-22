@@ -1,6 +1,6 @@
 const boxSize = 11;
 const boxCountWidth = 7;
-const boxCountHeigth = 20;
+const boxCountHeigth = 10;
 const boxDistance = 10;
 var bgCube;
 var rows = new Array();
@@ -36,7 +36,7 @@ function initializeBackground(THREE, scene) {
         if ((y % 2) == 0) {
             material = whiteMaterial;
         }
-        var rowCube = makeBox(bgCube, material, - (boxCountWidth/2) * boxDistance, -20 + boxDistance*y, 20 + (4 * Math.random() - 2));
+        var rowCube = makeBox(bgCube, material, - (boxCountWidth/2) * boxDistance, -20 + boxDistance*y, 20 + (2 * Math.random() - 1));
         for (let x = 1; x < boxCountWidth; x++) {
             material = blackMaterial;
             if (((x + y) % 2) == 0) {
@@ -53,8 +53,6 @@ function initializeBackground(THREE, scene) {
 
 function updateBackground(time) {
     bgCube.position.y = -5 * time;
-    //console.log((rows[0].position.y  + bgCube.position.y));
-    
     if(rows[0].position.y  +  bgCube.position.y < -30) {
         var row = rows.shift();
         row.position.y += boxDistance*boxCountHeigth;
