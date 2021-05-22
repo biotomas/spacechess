@@ -88,6 +88,7 @@ function updateEnemy(enemy, time) {
     if (enemy.hitpoints <= 0) {
         enemyPools[enemy.type].push(enemy.model);
         enemy.model.position.y = -100;
+        enemy.model.rotation.x = Math.PI;
         return true;
     }
     if (!enemy.currentAction) {
@@ -110,31 +111,31 @@ function updateEnemy(enemy, time) {
         if (time - enemy.currentAction.lastShotTime > enemy.currentAction.shootingInterval) {
             var angle = enemy.model.rotation.z;
             if (enemy.type == "king") {
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x+1, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x-1, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
+                addBullet("horse", enemy.model.position.x, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
+                addBullet("horse", enemy.model.position.x+1, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
+                addBullet("horse", enemy.model.position.x-1, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
             }
             if (enemy.type == "rook") {
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, -1, 0, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 1, 0, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 0, 1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 0, -1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, -1, 0, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 1, 0, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 0, 1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 0, -1, enemy.currentAction.shootingSpeed, time);
             }
             if (enemy.type == "bishop") {
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, -1, -1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 1, 1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, -1, 1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 1, -1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, -1, -1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 1, 1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, -1, 1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 1, -1, enemy.currentAction.shootingSpeed, time);
             }
             if (enemy.type == "queen") {
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, -1, -1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 1, 1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, -1, 1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 1, -1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, -1, 0, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 1, 0, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 0, 1, enemy.currentAction.shootingSpeed, time);
-                addBullet(false, enemy.model.position.x, enemy.model.position.y, 0, -1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, -1, -1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 1, 1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, -1, 1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 1, -1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, -1, 0, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 1, 0, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 0, 1, enemy.currentAction.shootingSpeed, time);
+                addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 0, -1, enemy.currentAction.shootingSpeed, time);
             }
             enemy.currentAction.lastShotTime = time;
         }

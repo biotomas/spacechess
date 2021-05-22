@@ -1,14 +1,11 @@
 
 var bullets = new Array();
-var playerBulletSpritePool = new Array();
-var enemyBulletSpritePool = new Array();
+var bulletPools = new Array();
 var lastRenderTime = null;
 var lastShootTime = 0;
-var bulletFrames = new Array();
-var bulletMaterial;
 
 class Bullet {
-    isFromPlayer;
+    type
     x;
     y;
     dx;
@@ -17,26 +14,28 @@ class Bullet {
     sprite;
 }
 
-function setBulletSprite(sprite0, sprite1, sprite2, sprite3, enemySprite, scene) {
-    bulletFrames.push(sprite0.material, sprite1.material, sprite2.material, sprite3.material);
-    sprite0.scale.x = 0.6;
-    sprite0.scale.y = 0.6;
-    enemySprite.scale.x = 0.3;
-    enemySprite.scale.y = 0.3;
-    enemySprite.material.rotation.x = Math.PI;
-    
-    bulletMaterial = sprite0.material;
-    for (let count = 0; count < 1000; count++) {
-        var clonedSprite = sprite0.clone();
-        clonedSprite.position.y = -100;
-        scene.add(clonedSprite);
-        playerBulletSpritePool.push(clonedSprite);
+//setBulletSprite(loadSprite('./sprites/bullet/plyaer.png'), loadSprite('./sprites/bullet/bishop.png'), 
+//loadSprite('./sprites/bullet/horse.png'), loadSprite('./sprites/bullet/rook.png'),loadSprite('./sprites/queen.png'), scene);
 
-        clonedSprite = enemySprite.clone();
-        clonedSprite.position.y = -100;
-        scene.add(clonedSprite);
-        enemyBulletSpritePool.push(clonedSprite);
+
+function setBulletSprite(playerSprite, bishopSprite, horseSprite, rookSprite, queenSprite, scene) {
+    for (let count = 0; count < 200; count++) {
+        addBulletSpriteToPool(scene, playerSprite, "player");
+        addBulletSpriteToPool(scene, bishopSprite, "bishop");
+        addBulletSpriteToPool(scene, horseSprite, "horse");
+        addBulletSpriteToPool(scene, rookSprite, "rook");
+        addBulletSpriteToPool(scene, queenSprite, "queen");
     }    
+}
+
+function addBulletSpriteToPool(scene, sprite, type) {
+    if (!bulletPools[type]) {
+        bulletPools[type] = new Array();
+    }
+    var clone = sprite.clone();
+    clone.position.y = -100;
+    scene.add(clone);
+    bulletPools[type].push(clone);
 }
 
 bulletTimeDelay = 0.2;
@@ -48,22 +47,21 @@ function finishBulletSpree(time) {
     }
 }
 
-function addBullet(isFromPlayer, startx, starty, deltax, deltay, speed, time) {
+function addBullet(type, startx, starty, deltax, deltay, speed, time) {
     var timeSinceLastShot = time - lastShootTime;
-    if (!isFromPlayer || timeSinceLastShot > bulletTimeDelay) {
+    if (type != "player" || timeSinceLastShot > bulletTimeDelay) {
         var bullet = new Bullet();
-        bullet.isFromPlayer = isFromPlayer;
+        bullet.type = type;
         bullet.x = startx;
         bullet.y = starty;
         bullet.dx = deltax;
         bullet.dy = deltay;
         bullet.speed = speed;
-        bullet.sprite = isFromPlayer ? playerBulletSpritePool.pop() : enemyBulletSpritePool.pop();
+        bullet.sprite = bulletPools[type].pop();
         if (!bullet.sprite) {
             console.log("out of bullets");
             return;
         }
-        //bullet.sprite.material.rotation.y = -deltax + Math.PI;
         bullets.push(bullet);
     }
 }
@@ -73,8 +71,6 @@ function updateBullets(time, player) {
         lastRenderTime = time;
         return;
     }
-    //bulletMaterial.map = bulletFrames[Math.round(time * 10) % 4].map;
-
     deltaTime = time - lastRenderTime;
     lastRenderTime = time;
     bullets = bullets.filter(bullet => !updateBullet(bullet, player, deltaTime));
@@ -89,11 +85,7 @@ function updateBullet(bullet, player, deltaTime) {
     }
     if (bulletOutOfBounds(bullet) || bulletHitEnemy(bullet) || bulletHitPlayer(bullet, player)) {
         bullet.sprite.position.y = -100;
-        if (bullet.isFromPlayer) {
-            playerBulletSpritePool.push(bullet.sprite);
-        } else {
-            enemyBulletSpritePool.push(bullet.sprite);
-        }
+        bulletPools[bullet.type].push(bullet.sprite);
         return true;
     } else {
         return false;
@@ -101,7 +93,7 @@ function updateBullet(bullet, player, deltaTime) {
 }
 
 function bulletHitPlayer(bullet, player) {
-    if (bullet.isFromPlayer) {
+    if (bullet.type == "player") {
         return false;
     }
     var px = player.position.x;
@@ -115,7 +107,7 @@ function bulletHitPlayer(bullet, player) {
 }
 
 function bulletHitEnemy(bullet) {
-    if (!bullet.isFromPlayer) {
+    if (bullet.type != "player") {
         return false;
     }
     for (let index = 0; index < liveEnemies.length; index++) {
