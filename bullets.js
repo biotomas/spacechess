@@ -1,13 +1,11 @@
 
 var bullets = new Array();
-var spritesPool = new Array();
+var bulletPools = new Array();
 var lastRenderTime = null;
 var lastShootTime = 0;
-var bulletFrames = new Array();
-var bulletMaterial;
 
 class Bullet {
-    isFromPlayer;
+    type
     x;
     y;
     dx;
@@ -16,22 +14,31 @@ class Bullet {
     sprite;
 }
 
-function setBulletSprite(sprite0, sprite1, sprite2, sprite3, scene) {
-    bulletFrames.push(sprite0.material, sprite1.material, sprite2.material, sprite3.material);
-    sprite0.scale.x = 0.6;
-    sprite0.scale.y = 0.6;
-    bulletMaterial = sprite0.material;
-    for (let count = 0; count < 1000; count++) {
-        var clonedSprite = sprite0.clone();
-        clonedSprite.position.y = 20;
-        //clonedSprite.material = sprite.material.clone();
-        scene.add(clonedSprite);
-        spritesPool.push(clonedSprite);
-    }
+//setBulletSprite(loadSprite('./sprites/bullet/plyaer.png'), loadSprite('./sprites/bullet/bishop.png'), 
+//loadSprite('./sprites/bullet/horse.png'), loadSprite('./sprites/bullet/rook.png'),loadSprite('./sprites/queen.png'), scene);
 
+
+function setBulletSprite(playerSprite, bishopSprite, horseSprite, rookSprite, queenSprite, scene) {
+    for (let count = 0; count < 200; count++) {
+        addBulletSpriteToPool(scene, playerSprite, "player");
+        addBulletSpriteToPool(scene, bishopSprite, "bishop");
+        addBulletSpriteToPool(scene, horseSprite, "horse");
+        addBulletSpriteToPool(scene, rookSprite, "rook");
+        addBulletSpriteToPool(scene, queenSprite, "queen");
+    }    
 }
 
-bulletTimeDelay = 0.3;
+function addBulletSpriteToPool(scene, sprite, type) {
+    if (!bulletPools[type]) {
+        bulletPools[type] = new Array();
+    }
+    var clone = sprite.clone();
+    clone.position.y = -100;
+    scene.add(clone);
+    bulletPools[type].push(clone);
+}
+
+bulletTimeDelay = 0.2;
 
 function finishBulletSpree(time) {
     var timeSinceLastShot = time - lastShootTime;
@@ -40,53 +47,82 @@ function finishBulletSpree(time) {
     }
 }
 
-function addBullet(isFromPlayer, startx, starty, deltax, deltay, speed, time) {
+function addBullet(type, startx, starty, deltax, deltay, speed, time) {
     var timeSinceLastShot = time - lastShootTime;
-    if (timeSinceLastShot > bulletTimeDelay) {
-
+    if (type != "player" || timeSinceLastShot > bulletTimeDelay) {
         var bullet = new Bullet();
-        bullet.isFromPlayer = isFromPlayer;
+        bullet.type = type;
         bullet.x = startx;
         bullet.y = starty;
         bullet.dx = deltax;
         bullet.dy = deltay;
         bullet.speed = speed;
-        bullet.sprite = spritesPool.pop();
+        bullet.sprite = bulletPools[type].pop();
         if (!bullet.sprite) {
             console.log("out of bullets");
             return;
         }
-        bullet.sprite.material.rotation = -deltax; //Math.sin(deltax);
         bullets.push(bullet);
     }
 }
 
-function updateBullets(time) {
+function updateBullets(time, player) {
     if (lastRenderTime == null) {
         lastRenderTime = time;
         return;
     }
-    bulletMaterial.map = bulletFrames[Math.round(time * 5) % 4].map;
-
     deltaTime = time - lastRenderTime;
     lastRenderTime = time;
-    for (let index = 0; index < bullets.length; index++) {
-        const bullet = bullets[index];
-        bullet.x = bullet.x + deltaTime * bullet.dx * bullet.speed;
-        bullet.y = bullet.y + deltaTime * bullet.dy * bullet.speed;
-        if (bullet.sprite) {
-            bullet.sprite.position.x = bullet.x;
-            bullet.sprite.position.y = bullet.y;
-        }
-    }
-    bullets = bullets.filter(bullet => !removeBullet(bullet));
+    bullets = bullets.filter(bullet => !updateBullet(bullet, player, deltaTime));
 }
 
-function removeBullet(bullet) {
-    if (bullet.x < -100 || bullet.x > 100 || bullet.y < -10 || bullet.y > 20) {
-        spritesPool.push(bullet.sprite);
+function updateBullet(bullet, player, deltaTime) {
+    bullet.x = bullet.x + deltaTime * bullet.dx * bullet.speed;
+    bullet.y = bullet.y + deltaTime * bullet.dy * bullet.speed;
+    if (bullet.sprite) {
+        bullet.sprite.position.x = bullet.x;
+        bullet.sprite.position.y = bullet.y;
+    }
+    if (bulletOutOfBounds(bullet) || bulletHitEnemy(bullet) || bulletHitPlayer(bullet, player)) {
+        bullet.sprite.position.y = -100;
+        bulletPools[bullet.type].push(bullet.sprite);
         return true;
     } else {
         return false;
     }
+}
+
+function bulletHitPlayer(bullet, player) {
+    if (bullet.type == "player") {
+        return false;
+    }
+    var px = player.position.x;
+    var py = player.position.y;
+    var distanceSquare = (px - bullet.x)*(px - bullet.x) + (py - bullet.y)*(py - bullet.y);
+    if (distanceSquare < 0.5) {
+        console.log("player was hit");
+        return true;
+    }
+    return false;
+}
+
+function bulletHitEnemy(bullet) {
+    if (bullet.type != "player") {
+        return false;
+    }
+    for (let index = 0; index < liveEnemies.length; index++) {
+        var enemy = liveEnemies[index];
+        var px = enemy.model.position.x;
+        var py = enemy.model.position.y;
+        var distanceSquare = (px - bullet.x)*(px - bullet.x) + (py - bullet.y)*(py - bullet.y);
+        if (distanceSquare < 0.5) {
+            enemy.hitpoints-=10;
+            return true;
+        }
+    }
+    return false;
+}
+
+function bulletOutOfBounds(bullet) {
+    return (bullet.x < -100 || bullet.x > 100 || bullet.y < -10 || bullet.y > 20);
 }
