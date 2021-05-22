@@ -16,6 +16,7 @@
 <script src="input.js"></script>
 <script src="bullets.js"></script>
 <script src="hitpoints.js"></script>
+<script src="background.js"></script>
 
 <script type="module">
     import * as THREE from './libs/three.module.js';
@@ -48,7 +49,8 @@
 
         const canvas = document.querySelector('#c');
         initializeInput(canvas);
-        const renderer = new THREE.WebGLRenderer({ canvas });
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        render.antialias = true;
 
         const fov = 75;
         const aspect = 0.75;  // the canvas default
@@ -70,15 +72,15 @@
         setBulletSprite(loadSprite('./sprites/bullet/frame0.png'), loadSprite('./sprites/bullet/frame1.png'), loadSprite('./sprites/bullet/frame2.png'), loadSprite('./sprites/bullet/frame3.png'), scene);
         setHPSprites(loadSprite('./sprites/HP_Bar_Version_01_Empty.png'),loadSprite('./sprites/HP_Bar_Pellet.png'), scene);
 
+        var color = 0xFFFFFF;
+        const intensity = 1;
+        const light = new THREE.DirectionalLight(color, intensity);
+        const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);
+        light.position.set(-1, 2, 4);
+        scene.add(light);
+        scene.add(ambientLight);
 
         {
-            const color = 0xFFFFFF;
-            const intensity = 1;
-            const light = new THREE.DirectionalLight(color, intensity);
-            const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);
-            light.position.set(-1, 2, 4);
-            scene.add(light);
-            scene.add(ambientLight);
 
 
             loadModel('models/white-pawn.glb', scene, "rook");
@@ -127,35 +129,16 @@
         }
 
 
-        const boxWidth = 1;
-        const boxHeight = 1;
-        const boxDepth = 1;
-        const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
 
-        function makeInstance(geometry, color, x) {
-            const material = new THREE.MeshPhongMaterial({ color });
-
-            const cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-
-            cube.position.x = x;
-            cube.position.z = -15;
-
-            return cube;
-        }
-
-        // const cubes = [
-        //     makeInstance(geometry, 0x44aa88, 0),
-        //     makeInstance(geometry, 0x8844aa, -2),
-        //     makeInstance(geometry, 0xaa8844, 2),
-        // ];
-
+        initializeBackground(THREE, scene);
+        
         var rooks = 0;
 
         function render(time) {
             stats.begin();
             time *= 0.001;  // convert time to seconds
             takeInput(time);
+            updateBackground(time);
 
             if (models["rook"]) {
                 var rook = models["rook"];
@@ -231,6 +214,7 @@
                     addBullet(true, player.position.x, player.position.y+1, 0.4, 1, 10, time);
                     finishBulletSpree(time);
                 }
+                light.position.set(player.position.x, player.position.y, player.position.z + 5);
             }
         }
 
