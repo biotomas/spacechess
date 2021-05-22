@@ -10,7 +10,13 @@
 </head>
 
 <body>
-    <canvas id="c" width="600" height="800"></canvas>
+    <div>   
+        <div class="statement" id="blue"></div>
+        <div class="statement" id="red"></div>
+        <div class="statement" id="green"></div>
+        <div class="statement" id="yellow"></div>
+        <canvas id="c" width="600" height="800"></canvas>
+    </div>
 </body>
 
 <script src="input.js"></script>
@@ -19,11 +25,12 @@
 <script src="background.js"></script>
 <script src="enemy.js"></script>
 <script src="enemyScripts.js"></script>
+<script src="statements.js"></script>
+
 
 <script type="module">
     import * as THREE from './libs/three.module.js';
     import { GLTFLoader } from './libs/GLTFLoader.js';
-    import Collisions from './libs/collisions/Collisions.js';
     import Stats from './libs/stats.module.js';
 
     function main() {
@@ -69,14 +76,21 @@
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x444444);
-        setBulletSprite(loadSprite('./sprites/bullet/player.png'), loadSprite('./sprites/bullet/bishop.png'), 
-        loadSprite('./sprites/bullet/horse.png'), loadSprite('./sprites/bullet/rook.png'),loadSprite('./sprites/bullet/queen.png'), scene);
+        setBulletSprite(loadSprite('./sprites/bullet/player.png'), loadSprite('./sprites/bullet/bishop.png'),
+            loadSprite('./sprites/bullet/horse.png'), loadSprite('./sprites/bullet/rook.png'), loadSprite('./sprites/bullet/queen.png'), scene);
+
         setHPSprites(loadSprite('./sprites/HP_Bar_Version_01_Empty.png'), loadSprite('./sprites/HP_Bar_Pellet.png'), scene);
+
+        setBoardSprites(loadSprite('./sprites/board/blue.png'), loadSprite('./sprites/board/green.png'), loadSprite('./sprites/board/red.png'),
+            loadSprite('./sprites/board/yellow.png'), scene);
+
+        //setStatements("hrea", "rew", "rweefrwe", "ew");
+        randomStatements("red");
 
         var color = 0xFFFFFF;
         const intensity = 1;
         const light = new THREE.DirectionalLight(color, intensity);
-        light.position.set(0,-3,3);
+        light.position.set(0, -3, 3);
         const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.2);
         scene.add(light);
         scene.add(ambientLight);
@@ -85,6 +99,7 @@
         loadModel('models/white-pawn.glb', "pawn");
         loadModel('models/black-king.glb', "king");
         loadModel('models/blue-bishop.glb', "bishop");
+        //loadModel('models/Boss/Black King Base 3.glb', "bishop");
         loadModel('models/red-rook.glb', "rook");
         loadModel('models/green-queen.glb', "queen");
 
@@ -107,7 +122,7 @@
                     pawn.rotation.x = Math.PI / 2;
                     pawn.position.y = -2;
                     scene.add(models["pawn"]);
-                    setEnemyModels(scene, models["king"], models["queen"],models["rook"], models["bishop"]);
+                    setEnemyModels(scene, models["king"], models["queen"], models["rook"], models["bishop"]);
                     modelsAdded = true;
                 }
             }

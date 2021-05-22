@@ -1,5 +1,32 @@
-canvas {
+div {
+    width: 600px;
     padding: 0;
     margin: auto;
     display: block;
+}
+.statement {
+    position: relative;
+    font-stretch: condensed;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12pt;
+	text-align: left;
+	z-index: 100;
+	display:block;
+    width: 100%;
+}
+#blue {
+	top: 105px;
+    left: 30px;
+}
+#red {
+	top: 85px;
+    left: 330px;
+}
+#green {
+	top: 130px;
+    left: 30px;
+}
+#yellow {
+	top: 110px;
+    left: 330px;
 }
