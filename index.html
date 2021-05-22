@@ -67,7 +67,7 @@
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color( 0x444444 );
-        setBulletSprite(loadSprite('./sprites/bullet.png'), scene);
+        setBulletSprite(loadSprite('./sprites/bullet/frame0.png'), loadSprite('./sprites/bullet/frame1.png'), loadSprite('./sprites/bullet/frame2.png'), loadSprite('./sprites/bullet/frame3.png'), scene);
         setHPSprites(loadSprite('./sprites/HP_Bar_Version_01_Empty.png'),loadSprite('./sprites/HP_Bar_Pellet.png'), scene);
 
 
@@ -155,7 +155,7 @@
         function render(time) {
             stats.begin();
             time *= 0.001;  // convert time to seconds
-            takeInput();
+            takeInput(time);
 
             if (models["rook"]) {
                 var rook = models["rook"];
@@ -200,7 +200,7 @@
 
         var hpValue = 2;
 
-        function takeInput() {
+        function takeInput(time) {
             var player = models["rook"];
             if (player) {
                 player.rotation.z = 0;
@@ -226,9 +226,10 @@
                 }
                 setHPValue(hpValue);
                 if (keyIsDown(32)) {
-                    addBullet(true, player.position.x, player.position.y+1, 0, 1, 10);
-                    addBullet(true, player.position.x, player.position.y+1, -0.4, 1, 10);
-                    addBullet(true, player.position.x, player.position.y+1, 0.4, 1, 10);
+                    addBullet(true, player.position.x, player.position.y+1, 0, 1, 10, time);
+                    addBullet(true, player.position.x, player.position.y+1, -0.4, 1, 10, time);
+                    addBullet(true, player.position.x, player.position.y+1, 0.4, 1, 10, time);
+                    finishBulletSpree(time);
                 }
             }
         }
