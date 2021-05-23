@@ -17,7 +17,11 @@ function setHPSprites(empty, pellet, scene) {
     empty.scale.x = 7;
 }
 
-function setHPValue(value) {
+function decreaseHP(value) {
+    setHP(hitpoints - value);
+}
+
+function setHP(value) {
     hitpoints = value;
     if (hitpoints < 0)
         hitpoints = 0;

@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <div>   
+    <div>
         <div class="statement" id="blue"></div>
         <div class="statement" id="red"></div>
         <div class="statement" id="green"></div>
@@ -24,6 +24,7 @@
 <script src="hitpoints.js"></script>
 <script src="background.js"></script>
 <script src="enemy.js"></script>
+<script src="sounds.js"></script>
 <script src="enemyScripts.js"></script>
 <script src="statements.js"></script>
 
@@ -68,14 +69,66 @@
         camera.position.y = 5;
         camera.lookAt(0, 10, 0);
         camera.position.y = -2;
+
+
+        function startMusic() {
+
+            // create an AudioListener and add it to the camera
+            const listener = new THREE.AudioListener();
+            camera.add(listener);
+
+            // create a global audio source
+            const music = new THREE.Audio(listener);
+
+            // load a sound and set it as the Audio object's buffer
+            const audioLoader = new THREE.AudioLoader();
+            audioLoader.load('sound/through_space.ogg', function (buffer) {
+                //audioLoader.load('sound/explosion.flac', function (buffer) {
+                music.setBuffer(buffer);
+                music.setLoop(true);
+                music.setVolume(1);
+                music.play();
+            });
+            var soundEffectsVolume = 0.2;
+            audioLoader.load('sound/explosion.wav', function (buffer) {
+                var sound = new THREE.Audio(listener); sound.setBuffer(buffer); sound.setLoop(false); sound.setVolume(1);
+                soundEffects["explosion"] = sound;
+            });
+            audioLoader.load('sound/launches/iceball.wav', function (buffer) {
+                var sound = new THREE.Audio(listener); sound.setBuffer(buffer); sound.setLoop(false); sound.setVolume(soundEffectsVolume);
+                soundEffects["player"] = sound;
+            });
+            audioLoader.load('sound/launches/slimeball.wav', function (buffer) {
+                var sound = new THREE.Audio(listener); sound.setBuffer(buffer); sound.setLoop(false); sound.setVolume(soundEffectsVolume);
+                soundEffects["queen"] = sound;
+            });
+            audioLoader.load('sound/launches/rlaunch.wav', function (buffer) {
+                var sound = new THREE.Audio(listener); sound.setBuffer(buffer); sound.setLoop(false); sound.setVolume(soundEffectsVolume);
+                soundEffects["rook"] = sound;
+            });
+            audioLoader.load('sound/launches/laser2.wav', function (buffer) {
+                var sound = new THREE.Audio(listener); sound.setBuffer(buffer); sound.setLoop(false); sound.setVolume(soundEffectsVolume);
+                soundEffects["bishop"] = sound;
+            });
+            audioLoader.load('sound/launches/flaunch.wav', function (buffer) {
+                var sound = new THREE.Audio(listener); sound.setBuffer(buffer); sound.setLoop(false); sound.setVolume(soundEffectsVolume);
+                soundEffects["knight"] = sound;
+            });
+            audioLoader.load('sound/launches/laser4.wav', function (buffer) {
+                var sound = new THREE.Audio(listener); sound.setBuffer(buffer); sound.setLoop(false); sound.setVolume(soundEffectsVolume);
+                soundEffects["boss"] = sound;
+            });
+        }
+
+
         var model;
 
-        var stats = new Stats();
-        stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-        document.body.appendChild(stats.dom);
+        // var stats = new Stats();
+        // stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+        // document.body.appendChild(stats.dom);
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x444444);
+        //scene.background = new THREE.Color(0x444444);
         setBulletSprite(loadSprite('./sprites/bullet/player.png'), loadSprite('./sprites/bullet/bishop.png'),
             loadSprite('./sprites/bullet/horse.png'), loadSprite('./sprites/bullet/rook.png'), loadSprite('./sprites/bullet/queen.png'), scene);
 
@@ -97,49 +150,97 @@
 
 
         loadModel('models/white-pawn.glb', "pawn");
-        loadModel('models/black-king.glb', "king");
+        loadModel('models/yellow-knight.glb', "knight");
         loadModel('models/blue-bishop.glb', "bishop");
-        //loadModel('models/Boss/Black King Base 3.glb', "bishop");
         loadModel('models/red-rook.glb', "rook");
         loadModel('models/green-queen.glb', "queen");
+        loadModel('models/boss.glb', "boss");
 
 
         initializeBackground(THREE, scene);
+        setHP(5);
+
+        const introBoard = loadSprite("sprites/board/intro.png");
+        introBoard.position.z = 9;
+        introBoard.position.y = -1.5;
+
+        const winBoard = loadSprite("sprites/board/win.png");
+        winBoard.position.z = 9;
+        winBoard.position.y = -1.5;
+        winBoard.scale.y = 0.5;
+        const loseBoard = loadSprite("sprites/board/game-over.png");
+        loseBoard.position.z = 9;
+        loseBoard.position.y = -1.5;
+        loseBoard.scale.y = 0.5;
+
+        scene.add(introBoard);
+        scene.add(winBoard);
+        scene.add(loseBoard);
+
+        function showBoards() {
+            introBoard.position.y = -100;
+            winBoard.position.y = -100;
+            loseBoard.position.y = -100;
+            if (gameState == "win") {
+                winBoard.position.y = -1.5;
+            }
+            if (gameState == "intro") {
+                introBoard.position.y = -1.5;
+            }
+            if (gameState == "lose") {
+                loseBoard.position.y = -1.5;
+            }
+        }
 
         var modelsAdded = false;
 
         function render(time) {
-            stats.begin();
+            //stats.begin();
             time *= 0.001;  // convert time to seconds
-            takeInput(time);
-            updateBackground(time);
-
-
-
-            if (checkModelsLoaded()) {
-                if (!modelsAdded) {
-                    var pawn = models["pawn"];
-                    pawn.rotation.x = Math.PI / 2;
-                    pawn.position.y = -2;
-                    scene.add(models["pawn"]);
-                    setEnemyModels(scene, models["king"], models["queen"], models["rook"], models["bishop"]);
-                    modelsAdded = true;
+            showBoards();
+            if (gameState == "start") {
+                nextWave = 0;
+                setHP(5);
+                clearEnemies();
+                gameState = "play";
+                if (!musicStarted) {
+                    startMusic();
+                    console.log("start music");
+                    musicStarted = true;
                 }
             }
+            if (gameState == "play") {
+                takeInput(time);
+                updateBackground(time);
+                if (checkModelsLoaded()) {
+                    if (!modelsAdded) {
+                        var pawn = models["pawn"];
+                        pawn.rotation.x = Math.PI / 2;
+                        pawn.position.y = -2;
+                        scene.add(models["pawn"]);
+                        setEnemyModels(scene, models["boss"], models["knight"], models["queen"], models["rook"], models["bishop"]);
+                        modelsAdded = true;
+                    }
+                }
 
-            updateBullets(time, models["pawn"]);
-            updateEnemies(time);
+                updateBullets(time, models["pawn"]);
+                updateEnemies(time);
+                if (hitpoints <= 0) {
+                    gameState = "lose";
+                }
+            }
             renderer.render(scene, camera);
 
-            stats.end();
+            //stats.end();
             requestAnimationFrame(render);
         }
 
         function checkModelsLoaded() {
-            return (models["rook"] && models["pawn"] && models["queen"] && models["king"] && models["bishop"]);
+            return (models["rook"] && models["pawn"] && models["queen"] && models["knight"] && models["bishop"] && models["boss"]);
         }
 
         var hpValue = 2;
+        var musicStarted = false;
 
         function takeInput(time) {
             var player = models["pawn"];
@@ -157,28 +258,22 @@
                     //left
                     player.position.x -= 0.09;
                     player.rotation.z = 0.4;
-                    hpValue -= 0.1;
                 }
                 if (keyIsDown(39)) {
                     //right
-                    hpValue += 0.1;
                     player.position.x += 0.09;
                     player.rotation.z = -0.4;
                 }
-                setHPValue(hpValue);
                 if (keyIsDown(32)) {
-                    addBullet("player", player.position.x, player.position.y + 1, 0, 1, 10, time);
-                    //addBullet(true, player.position.x, player.position.y + 1, -0.4, 1, 10, time);
-                    //addBullet(true, player.position.x, player.position.y + 1, 0.4, 1, 10, time);
+                    if (addBullet("player", player.position.x, player.position.y + 1, 0, 1, 10, time)) {
+                        playSound("player");
+                    }
                     finishBulletSpree(time);
                 }
-                //light.position.set(player.position.x, player.position.y, player.position.z + 4);
-
             }
         }
 
         requestAnimationFrame(render);
-
     }
 
     main();

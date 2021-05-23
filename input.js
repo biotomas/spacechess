@@ -1,5 +1,6 @@
 var keyState = new Map();
 var keyDown = new Map();
+var gameState = "intro";
 
 
 function initializeInput() {
@@ -11,6 +12,12 @@ function initializeInput() {
 
 	window.addEventListener('keyup', function (e) {
 		this.keyState[e.keyCode] = false;
+	}, true);
+
+	window.addEventListener('click', function(e){
+		if (gameState == "intro" || gameState == "win" || gameState == "lose") {
+			gameState = "start";
+		}
 	}, true);
 }
 

@@ -1,18 +1,20 @@
 const initialHitpoints = {
-    "king": 100,
+    "knight": 30,
     "queen": 60,
     "rook": 40,
-    "bishop": 30
+    "bishop": 30,
+    "boss" : 30,
 }
 
 var liveEnemies = new Array();
 var enemyPools = new Array();
 var modelsLoaded = false;
 
-function setEnemyModels(scene, king, queen, rook, bishop) {
+function setEnemyModels(scene, boss, knight, queen, rook, bishop) {
     const maxCountOfEachEnemy = 5;
     for (let i = 0; i < maxCountOfEachEnemy; i++) {
-        addEnemyModel(scene, "king", king);
+        addEnemyModel(scene, "boss", boss);
+        addEnemyModel(scene, "knight", knight);
         addEnemyModel(scene, "queen", queen);
         addEnemyModel(scene, "rook", rook);
         addEnemyModel(scene, "bishop", bishop);
@@ -27,6 +29,12 @@ function addEnemyModel(scene, type, model) {
     var modelClone = model.clone();
     modelClone.position.y = -100;
     modelClone.rotation.x = Math.PI;
+    if (type == "boss") {
+        modelClone.rotation.x = Math.PI/2;
+        modelClone.scale.x = 0.7;
+        modelClone.scale.y = 0.7;
+        modelClone.scale.z = 0.7;
+    }
     enemyPools[type].push(modelClone);
     scene.add(modelClone);
 }
@@ -83,12 +91,23 @@ function updateEnemies(time) {
     }
 }
 
+function clearEnemies() {
+    liveEnemies.forEach(enemy => removeEnemy(enemy));
+    liveEnemies = new Array();
+}
+
+function removeEnemy(enemy) {
+    enemyPools[enemy.type].push(enemy.model);
+    enemy.model.position.y = -100;
+}
 
 function updateEnemy(enemy, time) {
+    if (enemy.type == "boss") {
+        enemy.model.rotation.y = time;
+    }
     if (enemy.hitpoints <= 0) {
-        enemyPools[enemy.type].push(enemy.model);
-        enemy.model.position.y = -100;
-        enemy.model.rotation.x = Math.PI;
+        removeEnemy(enemy);
+        playSound("explosion");
         return true;
     }
     if (!enemy.currentAction) {
@@ -109,11 +128,21 @@ function updateEnemy(enemy, time) {
     var proportionalTime = actionTime / enemy.currentAction.duration;
     if (enemy.currentAction.isShooting) {
         if (time - enemy.currentAction.lastShotTime > enemy.currentAction.shootingInterval) {
-            var angle = enemy.model.rotation.z;
-            if (enemy.type == "king") {
+            if (enemy.type == "knight") {
+                var angle = enemy.model.rotation.z;
                 addBullet("horse", enemy.model.position.x, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
                 addBullet("horse", enemy.model.position.x+1, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
                 addBullet("horse", enemy.model.position.x-1, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
+            }
+            if (enemy.type == "boss") {
+                angle = -enemy.model.rotation.y + Math.PI/4;
+                addBullet("queen", enemy.model.position.x, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
+                angle += Math.PI/2;
+                addBullet("rook", enemy.model.position.x, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
+                angle += Math.PI/2;
+                addBullet("bishop", enemy.model.position.x, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
+                angle += Math.PI/2;
+                addBullet("horse", enemy.model.position.x, enemy.model.position.y, -Math.sin(angle), -Math.cos(angle), enemy.currentAction.shootingSpeed, time);
             }
             if (enemy.type == "rook") {
                 addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, -1, 0, enemy.currentAction.shootingSpeed, time);
@@ -137,6 +166,7 @@ function updateEnemy(enemy, time) {
                 addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 0, 1, enemy.currentAction.shootingSpeed, time);
                 addBullet(enemy.type, enemy.model.position.x, enemy.model.position.y, 0, -1, enemy.currentAction.shootingSpeed, time);
             }
+            playSound(enemy.type);
             enemy.currentAction.lastShotTime = time;
         }
     }

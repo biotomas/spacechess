@@ -1,7 +1,8 @@
 const boxSize = 11;
 const boxCountWidth = 7;
 const boxCountHeigth = 10;
-const boxDistance = 10;
+const boxDistance = 11;
+var distortionRate = 1;
 var bgCube;
 var rows = new Array();
 
@@ -19,15 +20,9 @@ function initializeBackground(THREE, scene) {
 
         const cube = new THREE.Mesh(geometry, material);
         parent.add(cube);
-
         cube.position.x = x;
         cube.position.y = y;
         cube.position.z = z;
-
-        cube.rotation.x = Math.random()/15;
-        cube.rotation.y = Math.random()/15;
-        cube.rotation.z = Math.random()/15;
-
         return cube;
     }
 
@@ -36,13 +31,16 @@ function initializeBackground(THREE, scene) {
         if ((y % 2) == 0) {
             material = whiteMaterial;
         }
-        var rowCube = makeBox(bgCube, material, - (boxCountWidth/2) * boxDistance, -20 + boxDistance*y, 20 + (2 * Math.random() - 1));
+        var rowCube = makeBox(bgCube, material, - (boxCountWidth/2) * boxDistance, -20 + boxDistance*y, 20);
         for (let x = 1; x < boxCountWidth; x++) {
             material = blackMaterial;
             if (((x + y) % 2) == 0) {
                 material = whiteMaterial;
             }
-            makeBox(rowCube, material, x*boxDistance, 0, (4 * Math.random() - 2));
+            var cube = makeBox(rowCube, material, x*boxDistance, 0, distortionRate * (4 * Math.random() - 2));
+            cube.rotation.x = distortionRate * Math.random()/15;
+            cube.rotation.y = distortionRate * Math.random()/15;
+            cube.rotation.z = distortionRate * Math.random()/15;
         }
         rows.push(rowCube);
 
@@ -52,17 +50,17 @@ function initializeBackground(THREE, scene) {
 }
 
 function updateBackground(time) {
-    bgCube.position.y = -5 * time;
+    bgCube.position.y = -10 * time;
     if(rows[0].position.y  +  bgCube.position.y < -30) {
         var row = rows.shift();
         row.position.y += boxDistance*boxCountHeigth;
         rows.push(row);
         for (let index = 0; index < row.children.length; index++) {
             var box = row.children[index];
-            box.position.z = (4 * Math.random() - 2);
-            box.rotation.x = Math.random()/15;
-            box.rotation.y = Math.random()/15;
-            box.rotation.z = Math.random()/15;
+            box.position.z = distortionRate * (4 * Math.random() - 2);
+            box.rotation.x = distortionRate * Math.random()/15;
+            box.rotation.y = distortionRate * Math.random()/15;
+            box.rotation.z = distortionRate * Math.random()/15;
         }
     }
 }

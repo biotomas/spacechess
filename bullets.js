@@ -25,7 +25,7 @@ function setBulletSprite(playerSprite, bishopSprite, horseSprite, rookSprite, qu
         addBulletSpriteToPool(scene, horseSprite, "horse");
         addBulletSpriteToPool(scene, rookSprite, "rook");
         addBulletSpriteToPool(scene, queenSprite, "queen");
-    }    
+    }
 }
 
 function addBulletSpriteToPool(scene, sprite, type) {
@@ -60,10 +60,12 @@ function addBullet(type, startx, starty, deltax, deltay, speed, time) {
         bullet.sprite = bulletPools[type].pop();
         if (!bullet.sprite) {
             console.log("out of bullets");
-            return;
+            return false;
         }
         bullets.push(bullet);
+        return true;
     }
+    return false;
 }
 
 function updateBullets(time, player) {
@@ -98,9 +100,9 @@ function bulletHitPlayer(bullet, player) {
     }
     var px = player.position.x;
     var py = player.position.y;
-    var distanceSquare = (px - bullet.x)*(px - bullet.x) + (py - bullet.y)*(py - bullet.y);
+    var distanceSquare = dist(px, py, bullet.x, bullet.y);
     if (distanceSquare < 0.5) {
-        console.log("player was hit");
+        decreaseHP(0.3);
         return true;
     }
     return false;
@@ -114,15 +116,53 @@ function bulletHitEnemy(bullet) {
         var enemy = liveEnemies[index];
         var px = enemy.model.position.x;
         var py = enemy.model.position.y;
-        var distanceSquare = (px - bullet.x)*(px - bullet.x) + (py - bullet.y)*(py - bullet.y);
-        if (distanceSquare < 0.5) {
-            enemy.hitpoints-=10;
+        var distanceSquare = dist(px, py, bullet.x, bullet.y);
+        if (enemy.type == "boss" && distanceSquare < 12) {
+            redx = px - Math.sin(enemy.model.rotation.y);
+            redy = py + Math.cos(enemy.model.rotation.y);
+            greenx = px - Math.sin(enemy.model.rotation.y + Math.PI/2);
+            greeny = py + Math.cos(enemy.model.rotation.y + Math.PI/2);
+            yellowx = px - Math.sin(enemy.model.rotation.y + Math.PI);
+            yellowy = py + Math.cos(enemy.model.rotation.y + Math.PI);
+            bluex = px - Math.sin(enemy.model.rotation.y + 1.5*Math.PI);
+            bluey = py + Math.cos(enemy.model.rotation.y + 1.5*Math.PI);
+            if (dist(redx, redy, bullet.x, bullet.y) < 7) {
+                if (weakColor == "red") {
+                    enemy.hitpoints--;
+                    console.log("hurt boss");
+                }
+            }
+            if (dist(yellowx, yellowy, bullet.x, bullet.y) < 7) {
+                if (weakColor == "yellow") {
+                    enemy.hitpoints--;
+                }
+            }
+            if (dist(bluex, bluey, bullet.x, bullet.y) < 7) {
+                if (weakColor == "blue") {
+                    enemy.hitpoints--;
+                }
+            }
+            if (dist(greenx, greeny, bullet.x, bullet.y) < 7) {
+                if (weakColor == "green") {
+                    enemy.hitpoints--;
+                }
+            }
+            return true;
+        } else if (distanceSquare < 0.5) {
+            if (weakPiece == enemy.type) {
+                enemy.hitpoints -= 3;
+            } else {
+                enemy.hitpoints -= 1;
+            }
             return true;
         }
     }
     return false;
 }
 
+function dist(x1, y1, x2, y2) {
+    return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+}
 function bulletOutOfBounds(bullet) {
-    return (bullet.x < -100 || bullet.x > 100 || bullet.y < -10 || bullet.y > 20);
+    return (bullet.x < -10 || bullet.x > 10 || bullet.y < -10 || bullet.y > 20);
 }

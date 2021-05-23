@@ -3,6 +3,8 @@ const greenText = document.querySelector('#green');
 const redText = document.querySelector('#red');
 const yellowText = document.querySelector('#yellow');
 const cities = new Array();
+var weakColor = "red";
+var weakPiece = "rook";
 
 function setBoardSprites(blue, green, red, yellow, scene) {
     scene.add(blue);
@@ -41,28 +43,65 @@ function setBoardSprites(blue, green, red, yellow, scene) {
 }
 
 function setStatements(blue, green, red, yellow) {
+    var changeText = "---- new statements incomming ----";
+    setStatementsForReal(changeText, changeText, changeText, changeText)
+    setTimeout(setStatementsForReal, 1000, blue, green, red, yellow);
+}
+
+function setStatementsForReal(blue, green, red, yellow) {
     blueText.innerHTML = blue;
     greenText.innerHTML = green;
     redText.innerHTML = red;
     yellowText.innerHTML = yellow;
 }
 
-function randomStatements(wrongColor) {
-    setStatements(randomFalseStatement(), randomCorrectStatement(), randomCorrectStatement(), randomCorrectStatement());
+function randomStatements() {
+    var st0 = randomCorrectStatement();
+    var st1 = randomCorrectStatement();
+    var st2 = randomCorrectStatement();
+    var st3 = randomCorrectStatement();
+    var weakColorId = rnd(4);
+    if (weakColorId == 0) {
+        st0 = randomFalseStatement();
+        weakColor = "blue";
+        weakPiece = "bishop";
+    }
+    if (weakColorId == 1) {
+        st1 = randomFalseStatement();
+        weakColor = "green";
+        weakPiece = "queen";
+    }
+    if (weakColorId == 2) {
+        st2 = randomFalseStatement();
+        weakColor = "red";
+        weakPiece = "rook";
+    }
+    if (weakColorId == 3) {
+        st3 = randomFalseStatement();
+        weakColor = "yellow";
+        weakPiece = "knight";
+    }
+    setStatements(st0, st1, st2, st3);
+    //console.log("weak color: ", weakColor, " weak piece: ", weakPiece);
+    setTimeout(randomStatements, 11000);
 }
 
 function randomCorrectStatement() {
-    var pair = geoData[Math.floor(Math.random() * geoData.length)];
+    var pair = geoData[rnd(geoData.length)];
     return "Capital of " + pair.country + " is " + pair.city;
 }
 
 function randomFalseStatement() {
-    var pair = geoData[Math.floor(Math.random() * geoData.length)];
-    var city = cities[Math.floor(Math.random() * cities.length)];
+    var pair = geoData[rnd(geoData.length)];
+    var city = cities[rnd(cities.length)];
     while (city == pair.city || (city.length + pair.country.length) > 24) {
-        city = cities[Math.floor(Math.random() * cities.length)];
+        city = cities[rnd(cities.length)];
     }
     return "Capital of " + pair.country + " is " + city;
+}
+
+function rnd(bound) {
+    return Math.floor(Math.random() * bound);
 }
 
 const geoData = [

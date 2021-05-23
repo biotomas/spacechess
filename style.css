@@ -4,6 +4,9 @@ div {
     margin: auto;
     display: block;
 }
+body {
+    background-color: black;
+}
 .statement {
     position: relative;
     font-stretch: condensed;
